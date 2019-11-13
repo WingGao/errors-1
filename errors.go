@@ -152,6 +152,16 @@ func WithStack(err error) error {
 	}
 }
 
+func WithStackSkip(err error, skip int) error {
+	if err == nil {
+		return nil
+	}
+	return &withStack{
+		err,
+		callersSkip(skip),
+	}
+}
+
 type withStack struct {
 	error
 	*stack
@@ -209,6 +219,25 @@ func Wrapf(err error, format string, args ...interface{}) error {
 	return &withStack{
 		err,
 		callers(),
+	}
+}
+
+func WrapSkip(e interface{}, skip int) error {
+	if e == nil {
+		return nil
+	}
+
+	var err error
+
+	switch e := e.(type) {
+	case error:
+		err = e
+	default:
+		err = fmt.Errorf("%v", e)
+	}
+	return &withStack{
+		err,
+		callersSkip(skip),
 	}
 }
 
